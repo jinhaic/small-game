@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+#btn{cursor: pointer;height: 3em;line-height: 3em;width: 6em;text-align: center;margin:300px auto;background-color: black;color: white;}
+#box{margin: 0 auto;display: block;}
+.all{float: left;border: 1px solid white;}
+.fine{background-color: #112337;border: 1px solid #152737;}
+.red{background-color: red;}
+.green{background-color: green;}
+.pink{background-color: pink;}
+.yellow{background-color: yellow;}
+.gray{background-color: gray;}
+</style>
+</head>
+<body>
+	<div id="btn">开始</div>
+	<div id="box"></div>
+<script>
+var Bwidth=30;//方块的宽度
+var num=0;//记录当前的方块是哪一种
+var shape=0;//记录当前的方块是哪一个方向
+var line=0;//记录当前方块最上方处于第几行
+var smBlock=0;//box中的所有可行走的盒子
+var LaR=0;//记录当前方块左还是右移了多少格
+var lineN=28;//一行有多少个格子
+var boom=0;//记录是否已经到底
+var BlockArry=[];//通过记录它们每一格在行中的位置来记录七种不同形状的方块，在创造背景函数中创建
+
+
+
+function begin(){//游戏开始时创建背景和方块并为所有格子标记上ID
+	var swidth=document.documentElement.clientWidth;
+	var sheight=document.documentElement.clientHeight;
+	var small=Math.min(swidth,sheight);//以最小值为根据，务必使一个屏幕内看得到全部方块
+	if(small<(Bwidth*lineN+lineN*2)){Bwidth=Math.floor((small-lineN*2)/lineN);}//根据浏览器的宽高设定方块的大小
+
+	createBgm();
+	createBlock();
+	for(var i=0;i<smBlock.length;i++){
+		var a="a_"+i;
+		smBlock[i].addClass(a);
+	}
+}
+function createBgm(){//创建背景
+	var box=$("#box");
+	box.style.width=Bwidth*28+28*2+"px";
+	box.style.height=Bwidth*26+26*2+"px";
+	var HTML="";
+	for(var i=0;i<27;i++){
+		for(var j=0;j<28;j++){
+			if(i<24){
+				if(j>3 && j<=23){
+					HTML+="<div class='fine all' style='width:"+Bwidth+"px;height:"+Bwidth+"px;'></div>"
+				}
+				if(j<=3){
+					HTML+="<div class='left all' style='width:"+Bwidth+"px;height:"+Bwidth+"px;'></div>"
+				}
+				if(j>23){
+					HTML+="<div class='right all' style='width:"+Bwidth+"px;height:"+Bwidth+"px;'></div>"
+				}
+			}else{
+				HTML+="<div class='bottom all' style='width:"+Bwidth+"px;height:"+Bwidth+"px;'></div>"
+			}
+		}
+	}
+	box.innerHTML=HTML;
+	smBlock=$(".all");
+	BlockArry=[[smBlock[13],smBlock[14],smBlock[41],smBlock[42]],
+				[smBlock[13],smBlock[14],smBlock[15],smBlock[41]],
+				[smBlock[13],smBlock[14],smBlock[42],smBlock[43]],
+				[smBlock[13],smBlock[14],smBlock[15],smBlock[43]],
+				[smBlock[41],smBlock[42],smBlock[14],smBlock[15]],
+				[smBlock[12],smBlock[13],smBlock[14],smBlock[15]],
+				[smBlock[13],smBlock[14],smBlock[15],smBlock[42]]];
+}
+function createBlock(){//随机出一种方块
+	var coin=Math.floor(Math.random()*(BlockArry.length));
+	num=coin;
+	switch(coin){
+		case 0:
+			setColor(0,"red now");
+			break;
+		case 1:
+			setColor(1,"green now");
+			break;
+		case 2:
+			setColor(2,"pink now");
+			break;
+		case 3:
+			setColor(3,"green now");
+			break;
+		case 4:
+			setColor(4,"pink now");
+			break;
+		case 5:
+			setColor(5,"yellow now");
+			break;
+		case 6:
+			setColor(6,"red now");
+	}	
+}
+function setColor(number,name){//把方块的颜色显示出现
+	for(var i=0;i<4;i++){
+		BlockArry[number][i].addClass(name);
+	}
+}
+function reviseDir(){//方块转换角度的函数
+	var y=$(".now");//记录原方块
+	var colorname=/(green|red|pink|yellow)/.exec(y[0].className)[1];
+	switch(num){
+		case 0:
+			break;
+		case 1:
+			var fin=[];
+			switch(shape){
+				case 0:
+					y.removeClass("green now");
+					fin.concat(smBlock[line*lineN+13+LaR],smBlock[line*lineN+14+LaR],smBlock[(line+1)*lineN+14+LaR],smBlock[(line+2)*lineN+14+LaR]).addClass("green now");
+					shape=1;
+					break;
+				case 1:
+					y.removeClass("green now");
+					fin.concat(smBlock[(line+1)*lineN+13+LaR],smBlock[(line+1)*lineN+14+LaR],smBlock[(line+1)*lineN+15+LaR],smBlock[line*lineN+15+LaR]).addClass("green now");
+					shape=2
+					break;
+				case 2:
+					y.removeClass("green now");
+					fin.concat(smBlock[line*lineN+13+LaR],smBlock[(line+1)*lineN+13+LaR],smBlock[(line+2)*lineN+13+LaR],smBlock[(line+2)*lineN+14+LaR]).addClass("green now");
+					shape=3;
+					break;
+				case 3:
+					y.removeClass("green now");
+					fin.concat(smBlock[line*lineN+13+LaR],smBlock[line*lineN+14+LaR],smBlock[line*lineN+15+LaR],smBlock[(line+1)*lineN+13+LaR]).addClass("green now");
+					shape=0;
+			}
+			break;
+		case 2:
+			var fin=[];
+			switch(shape){
+				case 0:
+					y.removeClass("pink now");
+					fin.concat(smBlock[(line+2)*lineN+13+LaR],smBlock[(line+1)*lineN+13+LaR],smBlock[(line+1)*lineN+14+LaR],smBlock[line*lineN+14+LaR]).addClass("pink now");
+					shape=1;
+					break;
+				case 1:
+					y.removeClass("pink now");
+					fin.concat(smBlock[line*lineN+13+LaR],smBlock[line*lineN+14+LaR],smBlock[(line+1)*lineN+14+LaR],smBlock[(line+1)*lineN+15+LaR]).addClass("pink now");
+					shape=0
+			}
+			break;
+		case 3:
+			var fin=[];
+			switch(shape){
+				case 0:
+					y.removeClass("green now");
+					fin.concat(smBlock[(line+2)*lineN+13+LaR],smBlock[(line+2)*lineN+14+LaR],smBlock[(line+1)*lineN+14+LaR],smBlock[line*lineN+14+LaR]).addClass("green now");
+					shape=1;
+					break;
+				case 1:
+					y.removeClass("green now");
+					fin.concat(smBlock[line*lineN+13+LaR],smBlock[(line+1)*lineN+13+LaR],smBlock[(line+1)*lineN+14+LaR],smBlock[(line+1)*lineN+15+LaR]).addClass("green now");
+					shape=2
+					break;
+				case 2:
+					y.removeClass("green now");
+					fin.concat(smBlock[line*lineN+13+LaR],smBlock[line*lineN+14+LaR],smBlock[(line+1)*lineN+13+LaR],smBlock[(line+2)*lineN+13+LaR]).addClass("green now");
+					shape=3;
+					break;
+				case 3:
+					y.removeClass("green now");
+					fin.concat(smBlock[line*lineN+13+LaR],smBlock[line*lineN+14+LaR],smBlock[line*lineN+15+LaR],smBlock[(line+1)*lineN+15+LaR]).addClass("green now");
+					shape=0;
+			}
+			break;
+		case 4:
+			var fin=[];
+			switch(shape){
+				case 0:
+					y.removeClass("pink now");
+					fin.concat(smBlock[line*lineN+13+LaR],smBlock[(line+1)*lineN+13+LaR],smBlock[(line+1)*lineN+14+LaR],smBlock[(line+2)*lineN+14+LaR]).addClass("pink now");
+					shape=1;
+					break;
+				case 1:
+					y.removeClass("pink now");
+					fin.concat(smBlock[(line+1)*lineN+13+LaR],smBlock[(line+1)*lineN+14+LaR],smBlock[line*lineN+14+LaR],smBlock[line*lineN+15+LaR]).addClass("pink now");
+					shape=0
+			}
+			break;
+		case 5:
+			var fin=[];
+			switch(shape){
+				case 0:
+					y.removeClass("yellow now");
+					fin.concat(smBlock[line*lineN+13+LaR],smBlock[(line+1)*lineN+13+LaR],smBlock[(line+2)*lineN+13+LaR],smBlock[(line+3)*lineN+13+LaR]).addClass("yellow now");
+					shape=1;
+					break;
+				case 1:
+					y.removeClass("yellow now");
+					fin.concat(smBlock[line*lineN+12+LaR],smBlock[line*lineN+13+LaR],smBlock[line*lineN+14+LaR],smBlock[line*lineN+15+LaR]).addClass("yellow now");
+					shape=0
+			}
+			break;
+		case 6:
+			var fin=[];
+			switch(shape){
+				case 0:
+					y.removeClass("red now");
+					fin.concat(smBlock[(line+1)*lineN+13+LaR],smBlock[line*lineN+14+LaR],smBlock[(line+1)*lineN+14+LaR],smBlock[(line+2)*lineN+14+LaR]).addClass("red now");
+					shape=1;
+					break;
+				case 1:
+					y.removeClass("red now");
+					fin.concat(smBlock[(line+1)*lineN+13+LaR],smBlock[(line+1)*lineN+14+LaR],smBlock[(line+1)*lineN+15+LaR],smBlock[line*lineN+14+LaR]).addClass("red now");
+					shape=2
+					break;
+				case 2:
+					y.removeClass("red now");
+					fin.concat(smBlock[line*lineN+13+LaR],smBlock[(line+1)*lineN+13+LaR],smBlock[(line+2)*lineN+13+LaR],smBlock[(line+1)*lineN+14+LaR]).addClass("red now");
+					shape=3
+					break;
+				case 3:
+					y.removeClass("red now");
+					fin.concat(smBlock[line*lineN+13+LaR],smBlock[line*lineN+14+LaR],smBlock[line*lineN+15+LaR],smBlock[(line+1)*lineN+14+LaR]).addClass("red now");
+					shape=0
+			}
+	}
+	for(var i=0;i<4;i++){
+		if(knocked()=="left"){
+			moveBlock("right");
+		}
+		if(knocked()=="right"){
+			moveBlock("left");
+		}
+		if(knocked()=="bottom"){
+			moveBlock("up");
+		}
+	}
+	if(knocked()=="done"){
+		$(".now").removeClass(colorname+" now");
+		y.addClass(colorname+" now");
+	}
+	
+}
+function moveBlock(){//上下左右称动方块
+	var a=0;
+	if(arguments[0]=="left"){a--;LaR--;}
+	if(arguments[0]=="right"){a++;LaR++;}
+	if(arguments[0]=="down"){a+=lineN;line++;}
+	if(arguments[0]=="up"){a-=lineN;line--;}
+	var arr=[];
+	var now=$(".now");
+	var colorname=/(green|red|pink|yellow)\snow/.exec(now[0].className)[1];
+	for(var i=0;i<4;i++){
+		arr[i]=Number(/a_([0-9]+)/.exec(now[i].className)[1]);
+	}
+	now.removeClass(colorname+" now");
+	for(var j=0;j<4;j++){
+		var n=arr[j]+a;
+		var select=".a_"+n;
+		$(select)[0].addClass(colorname+" now");
+	}
+}
+function knocked(){//碰撞检测
+	var type="";
+	var select=$(".now");
+	for(var i=0;i<4;i++){
+		var name=select[i].className;
+		if(name.indexOf("left")>=0){
+			type="left";
+			break;
+		}
+		if(name.indexOf("right")>=0){
+			type="right";
+			break;
+		}
+		if(name.indexOf("bottom")>=0){
+			type="bottom";
+			boom=1;
+			break;
+		}
+		if(name.indexOf("done")>=0){
+			type="done";
+			boom=1;
+			break;
+		}
+	}
+	return type;
+}
+function moveLeft(){//方块向左移动一格
+	moveBlock("left");
+	if(knocked()=="left" || knocked()=="done"){
+		moveBlock("right");
+	}
+}
+function moveRight(){//方块向右移动一格
+	moveBlock("right");
+	if(knocked()=="right" || knocked()=="done"){
+		moveBlock("left");
+	}
+}
+function moveDown(){//方块向下移动一格
+	var now=$(".now");
+	moveBlock("down");
+	if(knocked()=="bottom" || knocked()=="done"){
+		moveBlock("up");
+		now.addClass("done");
+		now.removeClass("now");
+		removeBlock();
+		if(gameover(now)){
+			createBlock();
+			shape=0;
+			line=0;
+			LaR=0;
+			boom=0;
+		}
+	}
+}
+function gameover(select){//如果第一行出现不能动的方块，游戏重置
+	var over=true;
+	var now=select;
+	if(now.length>0){
+		for(var i=0;i<4;i++){
+			var id=Number(/a_([0-9]+)/.exec(now[i].className)[1]);
+			if(id<=(lineN-5)){
+				num=0;shape=0;line=0;smBlock=0;LaR=0;boom=0;BlockArry=[];
+				begin();
+				over=false;
+				break;
+			}else{
+				over=true;
+			}
+		}
+		return over;
+	}
+	
+}
+function removeBlock(){//把连在一起的方块消除掉
+	var done=$(".done");//当前已经不能动的方块
+	var arr1=[];//记录每一个最靠左的方块，即它的左边会有left的类名
+	var firstcolor=[];//记录第一个最左的方块的颜色
+	var L=0;//记录有几个连在一起的方块
+	var R=0;//记录有多少行已经被消除
+	var FirstID=[];//记录符合消除的一行中的第一个的ID
+	for(var i=0;i<done.length;i++){
+		var id=Number(/a_([0-9]+)/.exec(done[i].className)[1]);
+		if((id-4)%28 == 0){
+			var lef=id-1;
+			var leftA=".a_"+lef;
+			if($(leftA)[0].className.indexOf("left")>=0){
+				arr1.push(id);
+				//alert(/([green|red|pink|yellow]+)\sdone/.test(done[i].className));
+				firstcolor.push(/(green|red|pink|yellow)\sdone/.exec(done[i].className)[1]);
+			}
+		}
+	}
+	for(var j=0;j<arr1.length;j++){
+		var arr2=[];//记录最左那一格的右边的方块，当它连起来共有一行的数目，即表示此行满足
+		var color2=[];//记录上面所说对应的颜色
+		for(var s=1;s<20;s++){
+				var id2=arr1[j]+s;
+				var newA=".a_"+id2;
+				if($(newA)[0].className.indexOf("done")>=0){
+					L+=1;
+					arr2.push(newA);
+					color2.push(/(green|red|pink|yellow)\sdone/.exec($(newA)[0].className)[1]);
+				}else{
+					L=0;arr2=[];color2=[];
+					break;
+				}
+		}
+		if(L==19){
+			var a1=".a_"+arr1[j];
+			var arr3=arr2.concat(a1);
+			var color3=color2.concat(firstcolor[j]);
+			for(var x=0;x<arr3.length;x++){
+				$(arr3[x]).removeClass(color3[x]+" done");
+			}
+			L=0;
+			R+=1;
+			FirstID.push(arr1[j]);
+		}
+	}
+	if(R>0){
+		for(var n=0;n<FirstID.length;n++){
+			var now_done=$(".done");//每次重新取得当前不能动的方块
+			var arr4=[];
+			var colorname=[];
+			for(var q=0;q<now_done.length;q++){
+				var A_id=Number(/a_([0-9]+)/.exec(now_done[q].className)[1]);
+				if(A_id<FirstID[n]){//小于最左一格的方块才被记录下来，即在被消除的那一行之上的格子才会被向下移动一行
+					arr4[q]=A_id;
+					colorname[q]=/(green|red|pink|yellow)\sdone/.exec(now_done[q].className)[1];
+				}			
+			}
+			for(var w=0;w<arr4.length;w++){
+				$(".a_"+arr4[w]).removeClass(colorname[w]+" done");
+				var p=arr4[w]+lineN;
+				var select=".a_"+p;
+				$(select)[0].addClass(colorname[w]+" done");
+			}
+		}
+	}
+}
+document.onkeydown=function(event){//上下左右四个键邦定对应的事件
+	switch(event.keyCode){
+		case 37://left
+			moveLeft()
+			break;
+		case 38://up
+			reviseDir();
+			break;
+		case 39://right
+			moveRight();
+			break;
+		case 40://down
+			moveDown();
+	}
+}
+Object.prototype.addClass=function(){
+	if(this.length){
+		for(var i=0;i<this.length;i++){
+			if(this[i].className.indexOf(arguments[0])<0){
+				this[i].className+=" "+arguments[0];
+			}
+		}
+	}else{
+		if(this.className.indexOf(arguments[0])<0){
+			this.className+=" "+arguments[0];
+		}
+	}
+	
+}
+Object.prototype.removeClass=function(){
+	if(this.length){
+		for(var i=0;i<this.length;i++){
+			var a=this[i].className.indexOf(arguments[0]);
+			var leng=arguments[0].length;
+			if(a>=0){
+				this[i].className=this[i].className.slice(0,a-1)+this[i].className.slice(a+leng);
+			}
+		}
+	}else{
+		var a=this.className.indexOf(arguments[0]);
+		var leng=arguments[0].length;
+		if(a>=0){
+			this.className=this.className.slice(0,a-1)+this.className.slice(a+leng);
+		}
+	}
+	
+}
+Object.prototype.myanimate=function(){
+	var myanimateArr=[];
+	return function(obj,time,callback){
+			var name=(this.id||this.className||this.tagName).replace(/\s/g,"");
+			for(var g=1;g<101;g++){
+				if(myanimateArr[name+"_myanimate_"+g]){
+					clearTimeout(myanimateArr[name+"_myanimate_"+g]);
+				}
+			}
+			var that=this;
+			var coin1=0,coin3=0,arr=[];
+			var obj2={},obj3={},obj4={};
+			for(var key in obj){
+				if(obj.hasOwnProperty(key)){
+					that.style[key]=that.currentStyle ? that.currentStyle[key] : window.getComputedStyle(that,null).getPropertyValue(key);
+					var now_n=Number(/(\-?\d+\.?\d?)/g.exec(obj[key])[1]);
+					var old_n=Number(/(\-?\d+\.?\d?)/g.exec(that.style[key])[1]);	
+					var xc=0;
+					if(now_n>old_n){
+						xc=now_n-old_n;
+					}else{
+						xc=old_n-now_n;
+					}
+					obj2[key]=xc;
+					obj3[key]=now_n;
+					obj4[key]=old_n;
+					arr[coin3]=key;
+					coin3++;
+				}
+			}
+			for(var i=1;i<101;i++){
+				(function(){
+					var j=i;
+					myanimateArr[name+"_myanimate_"+i]=setTimeout(function(){
+						for(var b=0;b<arr.length;b++){
+							(function(){
+								if(obj3[arr[b]]>0){
+									if(obj4[arr[b]]>0){
+										if(obj3[arr[b]]>obj4[arr[b]]){
+											var x=j*obj2[arr[b]]/100+obj4[arr[b]];that.style[arr[b]]=obj[arr[b]].replace(/(\-?\d+\.?\d?)/g,x);
+										}else{
+											var x=obj4[arr[b]]-j*obj2[arr[b]]/100;that.style[arr[b]]=obj[arr[b]].replace(/(\-?\d+\.?\d?)/g,x);
+										}
+									}else{
+										var x=obj4[arr[b]]+j*obj2[arr[b]]/100;that.style[arr[b]]=obj[arr[b]].replace(/(\-?\d+\.?\d?)/g,x);
+									}
+								}else{
+									if(obj4[arr[b]]>0){
+										var x=obj4[arr[b]]-j*obj2[arr[b]]/100;that.style[arr[b]]=obj[arr[b]].replace(/(\-?\d+\.?\d?)/g,x);
+									}else{
+										if(obj3[arr[b]]>obj4[arr[b]]){
+											var x=j*obj2[arr[b]]/100+obj4[arr[b]];that.style[arr[b]]=obj[arr[b]].replace(/(\-?\d+\.?\d?)/g,x);
+										}else{
+											var x=obj4[arr[b]]-j*obj2[arr[b]]/100;that.style[arr[b]]=obj[arr[b]].replace(/(\-?\d+\.?\d?)/g,x);
+										}
+									}
+								}
+							})(b);
+						}
+						if(j==100){if(typeof(callback)==="function"){callback();}}
+					},time*j/100);
+				})(i);
+			}
+		}
+}();
+function $(){
+	var b=[];
+	var select=arguments[0].slice(1);
+	if(arguments[0].indexOf(".")>=0){
+		var t=document.getElementsByTagName("*");
+		for(var i=0;i<t.length;i++){
+			if(t[i].className.indexOf(select)>=0){b.push(t[i]);}
+		}
+	}else if(arguments[0].indexOf("#")>=0){
+		b=document.getElementById(select);
+	}else{
+		b=document.getElementsByTagName(select);
+	}
+	return b;
+}
+
+$("#btn").onclick=function(){
+	begin();
+	setInterval("moveDown()",1000);
+	this.style.display="none";
+}
+</script>
+</body>
+</html>

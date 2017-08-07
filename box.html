@@ -1,0 +1,433 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body{background-color: #464646;}
+div{float: left;border:1px solid gray;}
+#box{clear: both;}
+.black{background-color: black;}
+.white{background-color: #f3f3f3;}
+.yellow{background-color: brown;}
+.green{background-color:green;}
+.blue{background-color: blue;}
+.gray{background-color:orange;}
+p{position: absolute;top:-10px;width: 100%;padding: 30% 0%;text-align: center;background-color:white;opacity: 0.95;height: 100%;display: none;}
+a{display: inline-block;margin-right: 20px;padding: 10px;font-size: 2em;border: 1px solid black;color: black;cursor: pointer;}
+</style>
+</head>
+<body onkeydown="keyDown(event);">
+	<div id="box"></div>
+	<p><a onclick="again()">再玩一次</a><a onclick="next()" id="nextBtn">玩下一关</a></p>
+<script>
+var Arr=[[8,[0,0,0,0,0,0,0,0,
+			0,0,4,1,0,0,0,0,
+			0,0,1,2,1,1,0,0,
+			0,0,0,1,0,1,0,0,
+			0,3,0,1,0,1,1,0,
+			0,3,2,1,1,0,1,0,
+			0,3,1,1,1,2,1,0,
+			0,0,0,0,0,0,0,0]],
+		[7,[0,0,0,0,0,0,0,
+			0,0,1,1,0,0,0,
+			0,1,1,1,0,0,0,
+			0,1,1,5,2,1,0,
+			0,1,0,3,1,1,0,
+			0,1,1,4,0,0,0,
+			0,0,0,0,0,0,0]],
+		[9,[0,0,0,0,0,0,0,0,0,
+			0,4,1,1,0,0,0,0,0,
+			0,1,2,2,0,0,0,0,0,
+			0,1,2,1,0,0,0,3,0,
+			0,0,0,1,0,0,0,3,0,
+			0,0,0,1,1,1,1,3,0,
+			0,0,1,1,1,0,1,1,0,
+			0,0,1,1,1,0,0,0,0,
+			0,0,0,0,0,0,0,0,0]],
+		[10,[0,0,0,0,0,0,0,0,0,0,
+			0,0,1,1,1,1,1,0,0,0,
+			0,0,2,0,0,0,1,1,1,0,
+			0,1,4,1,2,1,1,2,1,0,
+			0,1,3,3,0,1,2,1,0,0,
+			0,0,3,3,0,1,1,1,0,0,
+			0,0,0,0,0,0,0,0,0,0]],
+		[6,[0,0,0,0,0,0,
+			0,0,1,1,0,0,
+			0,4,2,1,0,0,
+			0,0,2,1,0,0,
+			0,0,1,2,1,0,
+			0,3,2,1,1,0,
+			0,3,3,5,3,0,
+			0,0,0,0,0,0]]
+		];
+
+var boxWidth=50;
+var boxHeight=50;
+var manCoin=0;
+var num=0;//第几关
+
+function createBox(array){
+	var box=document.getElementById("box");
+	var HTML="";
+	for(var i=0;i<array[1].length;i++){
+		switch(array[1][i]){
+			case 0:
+				HTML=HTML+"<div class='black' style='width:"+boxWidth+"px;height:"+boxHeight+"px;'"+"></div>";
+				break;
+			case 1:
+				HTML=HTML+"<div class='white' style='width:"+boxWidth+"px;height:"+boxHeight+"px;'"+"></div>";
+				break;
+			case 2:
+				HTML=HTML+"<div class='yellow' style='width:"+boxWidth+"px;height:"+boxHeight+"px;'"+"></div>";
+				break;
+			case 3:
+				HTML=HTML+"<div class='green' style='width:"+boxWidth+"px;height:"+boxHeight+"px;'"+"></div>";
+				break;
+			case 4:
+				HTML=HTML+"<div class='blue' style='width:"+boxWidth+"px;height:"+boxHeight+"px;'"+"></div>";
+				manCoin=i;
+				break
+			case 5:
+				HTML=HTML+"<div class='gray' style='width:"+boxWidth+"px;height:"+boxHeight+"px;'"+"></div>";
+		}
+	}
+	box.style.width=boxWidth*array[0]+2*array[0]+"px";
+	box.style.marginLeft=(document.body.offsetWidth-(boxWidth*array[0]+2*array[0]))/2+"px";
+	box.innerHTML=HTML;
+}
+createBox(Arr[0]);
+
+function keyDown(event){
+	var sel=document.getElementsByTagName("div");
+	var len=Arr[num][0];
+	switch(event.keyCode){
+		case 37://left
+			switch(sel[manCoin].className){
+				case "white":
+					sel[manCoin].className="blue";
+					if(sel[manCoin+1].className.indexOf("green")>=0){
+						sel[manCoin+1].className="green";
+					}else{
+						sel[manCoin+1].className="white";
+					}
+					manCoin--;
+					break;
+				case "black":
+					break;
+				case "yellow":
+					if(sel[manCoin-1].className=="white"){
+						sel[manCoin-1].className="yellow";
+						sel[manCoin].className="blue";
+						if(sel[manCoin+1].className.indexOf("green")>=0){
+							sel[manCoin+1].className="green";
+						}else{
+							sel[manCoin+1].className="white";
+						}
+						manCoin--;
+						break;
+					}else if(sel[manCoin-1].className.indexOf("green")>=0){
+						sel[manCoin-1].className="gray";
+						sel[manCoin].className="blue";
+						if(sel[manCoin+1].className.indexOf("green")>=0){
+							sel[manCoin+1].className="green";
+						}else{
+							sel[manCoin+1].className="white";
+						}
+						manCoin--;
+						break;
+					}else{
+						break;
+					}
+				case "green":
+					sel[manCoin].className="green blue";
+					if(sel[manCoin+1].className.indexOf("green")>=0){
+						sel[manCoin+1].className="green";
+					}else{
+						sel[manCoin+1].className="white";
+					}
+					manCoin--;
+					break;
+				case "gray":
+					if(sel[manCoin-1].className=="white"){
+						sel[manCoin-1].className="yellow";
+						sel[manCoin].className="green blue";
+						if(sel[manCoin+1].className.indexOf("green")>=0){
+							sel[manCoin+1].className="green";
+						}else{
+							sel[manCoin+1].className="white";
+						}
+						manCoin--;
+						break;
+					}else if(sel[manCoin-1].className.indexOf("green")>=0){
+						sel[manCoin-1].className="gray";
+						sel[manCoin].className="green blue";
+						if(sel[manCoin+1].className.indexOf("green")>=0){
+							sel[manCoin+1].className="green";
+						}else{
+							sel[manCoin+1].className="white";
+						}
+						manCoin--;
+						break;
+					}else{
+						break;
+					}
+			}
+			if(getElementsByClass("green").length<=0){document.getElementsByTagName("p")[0].style.display="block";}
+			break;
+		case 38://up
+			switch(sel[manCoin-len+1].className){
+				case "white":
+					sel[manCoin-len+1].className="blue";
+					if(sel[manCoin+1].className.indexOf("green")>=0){
+						sel[manCoin+1].className="green";
+					}else{
+						sel[manCoin+1].className="white";
+					}
+					manCoin=manCoin-len;
+					break;
+				case "black":
+					break;
+				case "yellow":
+					if(sel[manCoin-2*len+1].className=="white"){
+						sel[manCoin-2*len+1].className="yellow";
+						sel[manCoin-len+1].className="blue";
+						if(sel[manCoin+1].className.indexOf("green")>=0){
+							sel[manCoin+1].className="green";
+						}else{
+							sel[manCoin+1].className="white";
+						}
+						manCoin=manCoin-len;
+						break;
+					}else if(sel[manCoin-2*len+1].className.indexOf("green")>=0){
+						sel[manCoin-2*len+1].className="gray";
+						sel[manCoin-len+1].className="blue";
+						if(sel[manCoin+1].className.indexOf("green")>=0){
+							sel[manCoin+1].className="green";
+						}else{
+							sel[manCoin+1].className="white";
+						}
+						manCoin=manCoin-len;
+						break;
+					}else{
+						break;
+					}
+				case "green":
+					sel[manCoin-len+1].className="green blue";
+					if(sel[manCoin+1].className.indexOf("green")>=0){
+						sel[manCoin+1].className="green";
+					}else{
+						sel[manCoin+1].className="white";
+					}
+					manCoin=manCoin-len;
+					break;
+				case "gray":
+					if(sel[manCoin-2*len+1].className=="white"){
+						sel[manCoin-2*len+1].className="yellow";
+						sel[manCoin-len+1].className="green blue";
+						if(sel[manCoin+1].className.indexOf("green")>=0){
+							sel[manCoin+1].className="green";
+						}else{
+							sel[manCoin+1].className="white";
+						}
+						manCoin=manCoin-len;
+						break;
+					}else if(sel[manCoin-2*len+1].className.indexOf("green")>=0){
+						sel[manCoin-2*len+1].className="gray";
+						sel[manCoin-len+1].className="green blue";
+						if(sel[manCoin+1].className.indexOf("green")>=0){
+							sel[manCoin+1].className="green";
+						}else{
+							sel[manCoin+1].className="white";
+						}
+						manCoin=manCoin-len;
+						break;
+					}else{
+						break;
+					}
+			}
+			if(getElementsByClass("green").length<=0){document.getElementsByTagName("p")[0].style.display="block";}
+			break;
+		case 39://right
+			switch(sel[manCoin+2].className){
+				case "white":
+					sel[manCoin+2].className="blue";
+					if(sel[manCoin+1].className.indexOf("green")>=0){
+						sel[manCoin+1].className="green";
+					}else{
+						sel[manCoin+1].className="white";
+					}
+					manCoin++;
+					break;
+				case "black":
+					break;
+				case "yellow":
+					if(sel[manCoin+3].className=="white"){
+						sel[manCoin+3].className="yellow";
+						sel[manCoin+2].className="blue";
+						if(sel[manCoin+1].className.indexOf("green")>=0){
+							sel[manCoin+1].className="green";
+						}else{
+							sel[manCoin+1].className="white";
+						}
+						manCoin++;
+						break;
+					}else if(sel[manCoin+3].className.indexOf("green")>=0){
+						sel[manCoin+3].className="gray";
+						sel[manCoin+2].className="blue";
+						if(sel[manCoin+1].className.indexOf("green")>=0){
+							sel[manCoin+1].className="green";
+						}else{
+							sel[manCoin+1].className="white";
+						}
+						manCoin++;
+						break;
+					}else{
+						break;
+					}
+				case "green":
+					sel[manCoin+2].className="green blue";
+					if(sel[manCoin+1].className.indexOf("green")>=0){
+						sel[manCoin+1].className="green";
+					}else{
+						sel[manCoin+1].className="white";
+					}
+					manCoin++;
+					break;
+				case "gray":
+					if(sel[manCoin+3].className=="white"){
+						sel[manCoin+3].className="yellow";
+						sel[manCoin+2].className="green blue";
+						if(sel[manCoin+1].className.indexOf("green")>=0){
+							sel[manCoin+1].className="green";
+						}else{
+							sel[manCoin+1].className="white";
+						}
+						manCoin++;
+						break;
+					}else if(sel[manCoin+3].className.indexOf("green")>=0){
+						sel[manCoin+3].className="gray";
+						sel[manCoin+2].className="green blue";
+						if(sel[manCoin+1].className.indexOf("green")>=0){
+							sel[manCoin+1].className="green";
+						}else{
+							sel[manCoin+1].className="white";
+						}
+						manCoin++;
+						break;
+					}else{
+						break;
+					}
+			}
+			if(getElementsByClass("green").length<=0){document.getElementsByTagName("p")[0].style.display="block";}
+			break;
+		case 40://down
+			switch(sel[manCoin+len+1].className){
+				case "white":
+					sel[manCoin+len+1].className="blue";
+					if(sel[manCoin+1].className.indexOf("green")>=0){
+						sel[manCoin+1].className="green";
+					}else{
+						sel[manCoin+1].className="white";
+					}
+					manCoin=manCoin+len;
+					break;
+				case "black":
+					break;
+				case "yellow":
+					if(sel[manCoin+2*len+1].className=="white"){
+						sel[manCoin+2*len+1].className="yellow";
+						sel[manCoin+len+1].className="blue";
+						if(sel[manCoin+1].className.indexOf("green")>=0){
+							sel[manCoin+1].className="green";
+						}else{
+							sel[manCoin+1].className="white";
+						}
+						manCoin=manCoin+len;
+						break;
+					}else if(sel[manCoin+2*len+1].className.indexOf("green")>=0){
+						sel[manCoin+2*len+1].className="gray";
+						sel[manCoin+len+1].className="blue";
+						if(sel[manCoin+1].className.indexOf("green")>=0){
+							sel[manCoin+1].className="green";
+						}else{
+							sel[manCoin+1].className="white";
+						}
+						manCoin=manCoin+len;
+						break;
+					}else{
+						break;
+					}
+				case "green":
+					sel[manCoin+len+1].className="green blue";
+					if(sel[manCoin+1].className.indexOf("green")>=0){
+						sel[manCoin+1].className="green";
+					}else{
+						sel[manCoin+1].className="white";
+					}
+					manCoin=manCoin+len;
+					break;
+				case "gray":
+					if(sel[manCoin+2*len+1].className=="white"){
+						sel[manCoin+2*len+1].className="yellow";
+						sel[manCoin+len+1].className="green blue";
+						if(sel[manCoin+1].className.indexOf("green")>=0){
+							sel[manCoin+1].className="green";
+						}else{
+							sel[manCoin+1].className="white";
+						}
+						manCoin=manCoin+len;
+						break;
+					}else if(sel[manCoin+2*len+1].className.indexOf("green")>=0){
+						sel[manCoin+2*len+1].className="gray";
+						sel[manCoin+len+1].className="green blue";
+						if(sel[manCoin+1].className.indexOf("green")>=0){
+							sel[manCoin+1].className="green";
+						}else{
+							sel[manCoin+1].className="white";
+						}
+						manCoin=manCoin+len;
+						break;
+					}else{
+						break;
+					}
+			}
+			if(getElementsByClass("green").length<=0){document.getElementsByTagName("p")[0].style.display="block";}
+	}
+}
+
+function again(){
+	document.getElementsByTagName("p")[0].style.display="none";
+	createBox(Arr[num]);
+}
+var j=0;
+function next(){
+	document.getElementsByTagName("p")[0].style.display="none";
+	if(num==Arr.length-2){
+		document.getElementById("nextBtn").innerText="回到第一关";
+	}else{
+		document.getElementById("nextBtn").innerText="玩下一关";
+	}
+	if(num==Arr.length-1){num=-1;j=0;}
+	if(j=0){
+		num++;
+		createBox(Arr[num]);
+		j++;
+	}else{
+		num++;
+		createBox(Arr[num]);
+	}
+	
+}
+
+function getElementsByClass(selecte){
+	var t=document.getElementsByTagName("*");
+	var b=[];
+	for(var i=0;i<t.length;i++){
+		if(t[i].className.indexOf(selecte)>=0){b.push(t[i]);}
+	}
+	return b;
+}
+</script>
+</body>
+
+</html>
