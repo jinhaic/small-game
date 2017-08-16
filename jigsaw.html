@@ -1,0 +1,155 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+#main{width:600px;position: absolute;left: 50%;top:50%;transform: translate(-50%,-50%);border: 1px solid gray;height: 600px;}
+.box{border:1px solid gray;background: #112337;display: inline-block;position:absolute;cursor: pointer;font-size: 200%;text-align: center;color:#fff;z-index: 2;}
+.boxspace{border:1px solid #fff;background:#fff;cursor: initial;z-index: 1}
+.box0{left:0px;top: 0px;}
+</style>
+</head>
+<body>
+<div id="main">
+    <div class="box" unselectable="on" onselectstart="return false;" style="-moz-user-select:none;"></div>
+</div>
+
+<script>
+var main=new Object({row:4,line:4});
+
+var mwidth=$("#main").currentStyle ? $("#main").currentStyle["widht"] : window.getComputedStyle($("#main"),null).getPropertyValue("width");
+var mheight=$("#main").currentStyle ? $("#main").currentStyle["height"] : window.getComputedStyle($("#main"),null).getPropertyValue("height");
+
+var mwidthN=Number(/(\d+)/.exec(mwidth)[1]);
+var mheightN=Number(/(\d+)/.exec(mheight)[1]);
+
+var boxwidth=(mwidthN/main.row)-2,boxheight=(mheightN/main.line)-2;
+
+$(".box")[0].style.width=boxwidth+"px";
+$(".box")[0].style.height=boxheight+"px";
+$(".box")[0].style.lineHeight=boxheight+"px";
+
+var len=main.row*main.line-1;
+var mainhtml=$("#main"),boxhtml=$(".box");
+var result=[0];
+var siteArr=[];//记录每个号码在第几个box，如0号在第几个box，通过找到0号是否在left=0;top=0的位置开始判断是否完成拼图
+
+for(let i=1;i<len+1;i++){
+    result[i]=i;
+    mainhtml.innerHTML+=boxhtml[0].outerHTML;
+    boxhtml[i].style.width=boxwidth+"px";
+    boxhtml[i].style.height=boxheight+"px";
+    boxhtml[i].style.lineHeight=boxheight+"px";
+    boxhtml[i].style.left=(i-((Math.floor(i/main.row)*main.row)))*(boxwidth+2)+"px";
+    boxhtml[i].style.top=(Math.floor(i/main.row)*(boxheight+2))+"px";
+}
+
+$(".box")[len].className+=" boxspace";
+
+for(let j=0;j<len;j++){
+    $(".box")[j].className+=" box"+j;
+    var Num=Math.floor(Math.random()*result.length);
+    boxhtml[j].innerText=result[Num]+1;
+    result=result.slice(0,Num).concat(result.slice(Num+1));
+    siteArr[Num]=j;
+}
+
+for(let x=0;x<=len;x++){
+    $(".box")[x].onmousedown=function(event){
+        var left=this.style.left,top=this.style.top;
+        var starX=event.screenX,starY=event.screenY;
+        this.onmousemove=function(event){
+            this.style.left=(Number(/(\d*)/.exec(left)[0])+event.screenX-starX)+"px";
+            this.style.top=(Number(/(\d*)/.exec(top)[0])+event.screenY-starY)+"px";
+        }
+        this.onmouseup=function(event){
+            var endX=event.screenX,endY=event.screenY;
+            var resultX=starX-endX,resultY=starY-endY;
+            var dir="",coinX,coinY;
+            if(resultX>=0){coinX=resultX}else{coinX=-resultX}
+            if(resultY>=0){coinY=resultY}else{coinY=-resultY}
+            if(coinX>=coinY){
+                if(resultX>0){
+                    dir="left"
+                }else if(resultX){
+                    dir="right"
+                }
+            }else{
+                if(resultY>0){
+                    dir="top"
+                }else if(resultY){
+                    dir="down"
+                }
+            }
+            this.style.left=left;
+            this.style.top=top;
+            if(dir){/*console.log(dir);*/move(this,dir)}
+            this.onmousemove=null;
+            this.onmouseup=null;
+        }
+        this.onmouseout=function(event){
+            if(document.createEvent){
+                var evObj=document.createEvent('MouseEvents');
+                evObj.initEvent('mouseup',true,false);
+                this.dispatchEvent(evObj);
+            }else if(document.createEventObject){
+                this.fireEvent('onmouseup');
+            }
+            this.style.left=left;
+            this.style.top=top;
+            this.onmousemove=null;
+            this.onmouseup=null;
+        }
+    }
+}
+
+function move(box,dir){
+    var num=Number(/(\d+)/.exec(box.className)[1]);
+    switch(dir){
+        case "left":
+            var name=$(".box")[num-1].className;
+            if(name.indexOf('boxspace')>0){
+                $(".box")[num-1].innerText=box.innerText;
+                $(".box")[num-1].className="box box"+(num-1);
+                box.className=name;
+            }
+            break;
+        case "right":
+            var name=$(".box")[num+1].className;
+            if(name.indexOf('boxspace')>0){
+                $(".box")[num+1].innerText=box.innerText;
+                $(".box")[num+1].className="box box"+(num+1);
+                box.className=name;
+            }
+            break;
+        case "top":
+            var name=$(".box")[num-main.row].className;
+            if(name.indexOf('boxspace')>0){
+                $(".box")[num-main.row].innerText=box.innerText;
+                $(".box")[num-main.row].className="box box"+(num-main.row);
+                box.className=name;
+            }
+            break;
+        case "down":
+            var name=$(".box")[num+main.row].className;
+            if(name.indexOf('boxspace')>0){
+                $(".box")[num+main.row].innerText=box.innerText;
+                $(".box")[num+main.row].className="box box"+(num+main.row);
+                box.className=name;
+            }
+    }
+}
+
+function $(){
+    if(arguments[0].indexOf("#")>-1){
+        return document.getElementById(arguments[0].substring(1));
+    }else if(arguments[0].indexOf(".")>-1){
+        return document.getElementsByClassName(arguments[0].substring(1));
+    }else{
+        return document.getElementsByTagName(arguments[0]);
+    }
+}
+</script>
+
+</body>
+</html>
